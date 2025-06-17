@@ -1,5 +1,5 @@
-
 import { google } from 'googleapis';
+import { Readable } from 'stream';
 
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 
@@ -33,9 +33,14 @@ export class GoogleDriveService {
         parents: folderId ? [folderId] : undefined,
       };
 
+      // Convert Buffer to Readable stream
+      const stream = new Readable();
+      stream.push(fileBuffer);
+      stream.push(null);
+
       const media = {
         mimeType,
-        body: Buffer.from(fileBuffer),
+        body: stream,
       };
 
       const response = await this.drive.files.create({
