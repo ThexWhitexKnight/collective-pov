@@ -26,7 +26,10 @@ export class GoogleDriveService {
     isPublic: boolean = true
   ) {
     try {
+      console.log('Starting upload for:', fileName, 'Size:', fileBuffer.length, 'Type:', mimeType);
+      
       const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+      console.log('Using folder ID:', folderId);
       
       const fileMetadata = {
         name: fileName,
@@ -35,20 +38,25 @@ export class GoogleDriveService {
 
       // Create stream using Readable.from() method
       const stream = Readable.from([fileBuffer]);
+      console.log('Created stream for upload');
 
       const media = {
         mimeType,
         body: stream,
       };
 
+      console.log('Calling Google Drive API...');
       const response = await this.drive.files.create({
         requestBody: fileMetadata,
         media: media,
         fields: 'id,name,webViewLink,webContentLink,thumbnailLink',
       });
 
+      console.log('Google Drive API response:', response.data);
+
       // Set file permissions based on public/private setting
       if (isPublic) {
+        console.log('Setting public permissions...');
         await this.drive.permissions.create({
           fileId: response.data.id,
           requestBody: {
@@ -56,17 +64,24 @@ export class GoogleDriveService {
             type: 'anyone',
           },
         });
+        console.log('Permissions set successfully');
       }
 
-      return {
+      const result = {
         fileId: response.data.id,
         fileName: response.data.name,
         webViewLink: response.data.webViewLink,
         webContentLink: response.data.webContentLink,
         thumbnailLink: response.data.thumbnailLink,
       };
+
+      console.log('Upload completed successfully:', result);
+      return result;
     } catch (error) {
-      console.error('Error uploading to Google Drive:', error);
+      console.error('Detailed error uploading to Google Drive:', error);
+      console.error('Error message:', error.message);
+      console.error('Error code:', error.code);
+      console.error('Error status:', error.status);
       throw new Error('Failed to upload file to Google Drive');
     }
   }
