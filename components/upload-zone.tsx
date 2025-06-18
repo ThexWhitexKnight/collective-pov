@@ -124,8 +124,6 @@ if (finalValidation.isValid && finalValidation.fileType === 'image') {
 newFiles.push({
   file,
   preview,
-  thumbnail,        // ← NEW
-  thumbnailBlob,    // ← NEW
   isValid: finalValidation.isValid,
   error: finalValidation.error,
   type: finalValidation.fileType as 'image' | 'video'
