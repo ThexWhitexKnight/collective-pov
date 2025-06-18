@@ -140,15 +140,17 @@ const formatFileSize = (bytes: number) => {
                 )}
                 
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => setSelectedUpload(upload)}
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                 </div>
+               // Make sure this section looks clean:
+<div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+  <Button 
+    size="sm" 
+    variant="outline" 
+    onClick={() => setSelectedUpload(upload)}
+  > 
+    <Eye className="w-4 h-4" /> 
+  </Button>
+  {/* Make sure there's no leftover code here */}
+</div>
               </div>
               
               {/* File Info */}
