@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate file
     const validation = validateFile(file);
     if (!validation.isValid) {
       return NextResponse.json(
@@ -26,30 +27,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert file to buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+
+    // Generate unique filename
     const uniqueFilename = generateUniqueFilename(file.name);
 
-    let driveResult = null;
+    // Upload to Google Drive
+    const driveResult = await googleDriveService.uploadFile(
+      buffer,
+      uniqueFilename,
+      file.type,
+      isPublic
+    );
 
-    try {
-      driveResult = await googleDriveService.uploadFile(
-        buffer,
-        uniqueFilename,
-        file.type,
-        isPublic
-      );
-    } catch (driveError) {
-      console.warn('Drive error but continuing:', driveError.message);
-      driveResult = {
-        fileId: 'temp_' + Date.now(),
-        fileName: uniqueFilename,
-        webViewLink: 'https://drive.google.com',
-        webContentLink: null,
-        thumbnailLink: null,
-      };
-    }
-
+    // Save to database
     const upload = await prisma.upload.create({
       data: {
         filename: uniqueFilename,
