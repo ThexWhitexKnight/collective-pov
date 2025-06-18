@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Image, Video, Eye, EyeOff } from 'lucide-react';
+import { Image, Video, ExternalLink, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -148,13 +148,13 @@ const formatFileSize = (bytes: number) => {
                   >
                     <Eye className="w-4 h-4" />
                   </Button>
-                  <Button 
-  size="sm" 
-  variant="secondary" 
-  onClick={() => window.open(upload.driveUrl, '_blank')}
-> 
-  <ExternalLink className="w-4 h-4" /> 
-</Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => window.open(upload.driveUrl, '_blank')}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
                  </div>
               </div>
               
