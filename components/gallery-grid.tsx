@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Image, Video, Eye, EyeOff } from 'lucide-react';
+import { Image, Video, ExternalLink, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -140,17 +140,22 @@ const formatFileSize = (bytes: number) => {
                 )}
                 
                 {/* Overlay */}
-               // Make sure this section looks clean:
-<div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-  <Button 
-    size="sm" 
-    variant="outline" 
-    onClick={() => setSelectedUpload(upload)}
-  > 
-    <Eye className="w-4 h-4" /> 
-  </Button>
-  {/* Make sure there's no leftover code here */}
-</div>
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setSelectedUpload(upload)}
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => window.open(upload.driveUrl, '_blank')}
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </Button>
+                 </div>
               </div>
               
               {/* File Info */}
