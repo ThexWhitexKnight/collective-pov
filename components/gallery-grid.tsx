@@ -148,13 +148,7 @@ const formatFileSize = (bytes: number) => {
                   >
                     <Eye className="w-4 h-4" />
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => window.open(upload.driveUrl, '_blank')}
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </Button>
+                 
                  </div>
               </div>
               
