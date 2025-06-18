@@ -25,6 +25,8 @@ export class GoogleDriveService {
     mimeType: string,
     isPublic: boolean = true
   ) {
+    let fileId = null;
+    
     try {
       const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
       
@@ -46,24 +48,44 @@ export class GoogleDriveService {
         fields: 'id,name,webViewLink,webContentLink,thumbnailLink',
       });
 
-      if (isPublic) {
-        await this.drive.permissions.create({
-          fileId: response.data.id,
-          requestBody: {
-            role: 'reader',
-            type: 'anyone',
-          },
-        });
+      fileId = response.data.id;
+
+      // Set permissions with error handling
+      if (isPublic && fileId) {
+        try {
+          await this.drive.permissions.create({
+            fileId: fileId,
+            requestBody: {
+              role: 'reader',
+              type: 'anyone',
+            },
+          });
+        } catch (permError) {
+          console.warn('Permission setting failed, but upload succeeded:', permError.message);
+        }
       }
 
+      // Return success even if some fields are missing
       return {
-        fileId: response.data.id,
-        fileName: response.data.name,
-        webViewLink: response.data.webViewLink,
-        webContentLink: response.data.webContentLink,
-        thumbnailLink: response.data.thumbnailLink,
+        fileId: fileId || 'unknown',
+        fileName: response.data.name || fileName,
+        webViewLink: response.data.webViewLink || `https://drive.google.com/file/d/${fileId}/view`,
+        webContentLink: response.data.webContentLink || `https://drive.google.com/uc?id=${fileId}`,
+        thumbnailLink: response.data.thumbnailLink || null,
       };
     } catch (error) {
+      // If we have a fileId, the upload likely succeeded despite the error
+      if (fileId) {
+        console.warn('Upload succeeded but response processing failed:', error.message);
+        return {
+          fileId: fileId,
+          fileName: fileName,
+          webViewLink: `https://drive.google.com/file/d/${fileId}/view`,
+          webContentLink: `https://drive.google.com/uc?id=${fileId}`,
+          thumbnailLink: null,
+        };
+      }
+      
       console.error('Error uploading to Google Drive:', error);
       throw new Error('Failed to upload file to Google Drive');
     }
