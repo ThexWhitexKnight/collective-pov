@@ -25,95 +25,58 @@ export class GoogleDriveService {
     mimeType: string,
     isPublic: boolean = true
   ) {
-    let fileId = null;
+    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
     
-    try {
-      const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-      
-      const fileMetadata = {
-        name: fileName,
-        parents: folderId ? [folderId] : undefined,
-      };
+    const fileMetadata = {
+      name: fileName,
+      parents: folderId ? [folderId] : undefined,
+    };
 
-      const stream = Readable.from([fileBuffer]);
+    const stream = Readable.from([fileBuffer]);
 
-      const media = {
-        mimeType,
-        body: stream,
-      };
+    const media = {
+      mimeType,
+      body: stream,
+    };
 
-      const response = await this.drive.files.create({
-        requestBody: fileMetadata,
-        media: media,
-        fields: 'id,name,webViewLink,webContentLink,thumbnailLink',
+    const response = await this.drive.files.create({
+      requestBody: fileMetadata,
+      media: media,
+      fields: 'id,name,webViewLink,webContentLink,thumbnailLink',
+    });
+
+    if (isPublic) {
+      await this.drive.permissions.create({
+        fileId: response.data.id,
+        requestBody: {
+          role: 'reader',
+          type: 'anyone',
+        },
       });
-
-      fileId = response.data.id;
-
-      // Set permissions with error handling
-      if (isPublic && fileId) {
-        try {
-          await this.drive.permissions.create({
-            fileId: fileId,
-            requestBody: {
-              role: 'reader',
-              type: 'anyone',
-            },
-          });
-        } catch (permError) {
-          console.warn('Permission setting failed, but upload succeeded:', permError.message);
-        }
-      }
-
-      // Return success even if some fields are missing
-      return {
-        fileId: fileId || 'unknown',
-        fileName: response.data.name || fileName,
-        webViewLink: response.data.webViewLink || `https://drive.google.com/file/d/${fileId}/view`,
-        webContentLink: response.data.webContentLink || `https://drive.google.com/uc?id=${fileId}`,
-        thumbnailLink: response.data.thumbnailLink || null,
-      };
-    } catch (error) {
-      // If we have a fileId, the upload likely succeeded despite the error
-      if (fileId) {
-        console.warn('Upload succeeded but response processing failed:', error.message);
-        return {
-          fileId: fileId,
-          fileName: fileName,
-          webViewLink: `https://drive.google.com/file/d/${fileId}/view`,
-          webContentLink: `https://drive.google.com/uc?id=${fileId}`,
-          thumbnailLink: null,
-        };
-      }
-      
-      console.error('Error uploading to Google Drive:', error);
-      throw new Error('Failed to upload file to Google Drive');
     }
+
+    return {
+      fileId: response.data.id,
+      fileName: response.data.name,
+      webViewLink: response.data.webViewLink,
+      webContentLink: response.data.webContentLink,
+      thumbnailLink: response.data.thumbnailLink,
+    };
   }
 
   async deleteFile(fileId: string) {
-    try {
-      await this.drive.files.delete({
-        fileId: fileId,
-      });
-      return true;
-    } catch (error) {
-      console.error('Error deleting file from Google Drive:', error);
-      throw new Error('Failed to delete file from Google Drive');
-    }
+    await this.drive.files.delete({
+      fileId: fileId,
+    });
+    return true;
   }
 
   async getFileMetadata(fileId: string) {
-    try {
-      const response = await this.drive.files.get({
-        fileId: fileId,
-        fields: 'id,name,mimeType,size,createdTime,webViewLink,webContentLink,thumbnailLink',
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error getting file metadata:', error);
-      throw new Error('Failed to get file metadata');
-    }
+    const response = await this.drive.files.get({
+      fileId: fileId,
+      fields: 'id,name,mimeType,size,createdTime,webViewLink,webContentLink,thumbnailLink',
+    });
+    return response.data;
   }
 }
 
