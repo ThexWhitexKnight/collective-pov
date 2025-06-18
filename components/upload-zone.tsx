@@ -58,13 +58,19 @@ export default function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
       const preview = URL.createObjectURL(file);
       
-      newFiles.push({
-        file,
-        preview,
-        isValid: finalValidation.isValid,
-        error: finalValidation.error,
-        type: finalValidation.fileType as 'image' | 'video'
-      });
+      // Prepare thumbnail variables (empty for now)
+let thumbnail: string | undefined;
+let thumbnailBlob: Blob | undefined;
+
+newFiles.push({
+  file,
+  preview,
+  thumbnail,        
+  thumbnailBlob,    
+  isValid: finalValidation.isValid,
+  error: finalValidation.error,
+  type: finalValidation.fileType as 'image' | 'video'
+});
     }
     
     setFiles(prev => [...prev, ...newFiles]);
