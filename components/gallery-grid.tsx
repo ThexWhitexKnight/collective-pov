@@ -118,7 +118,7 @@ const formatFileSize = (bytes: number) => {
                   upload.thumbnailUrl ? (
                     <img
                       src={upload.thumbnailUrl}
-                      alt={upload.originalName}
+                      alt="img thumb"
                       className="w-full h-full object-cover cursor-pointer"
                       onClick={() => setSelectedUpload(upload)}
                     />
@@ -156,7 +156,7 @@ const formatFileSize = (bytes: number) => {
               <div className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium truncate flex-1">
-                    {upload.originalName}
+                    
                   </p>
                   <Badge variant={upload.isPublic ? 'default' : 'secondary'}>
                     {upload.isPublic ? (
@@ -184,7 +184,7 @@ const formatFileSize = (bytes: number) => {
             <>
               <DialogHeader className="p-6 pb-0">
                 <DialogTitle className="flex items-center justify-between">
-                  <span className="truncate">{selectedUpload.originalName}</span>
+                  <span className="truncate">uploaded</span>
                   <div className="flex items-center gap-2 ml-4">
                     <Badge variant={selectedUpload.isPublic ? 'default' : 'secondary'}>
                       {selectedUpload.isPublic ? (
@@ -203,7 +203,7 @@ const formatFileSize = (bytes: number) => {
                   <div className="max-h-[60vh] overflow-hidden rounded-lg">
                     <img
                       src={selectedUpload.driveUrl}
-                      alt={selectedUpload.originalName}
+                      alt="img display"
                       className="w-full h-full object-contain"
                     />
                   </div>
