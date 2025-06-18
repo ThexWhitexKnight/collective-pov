@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Image, Video, ExternalLink, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Image, Video, ExternalLink, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +32,6 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
 
   const fetchUploads = async () => {
     try {
@@ -54,26 +53,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
     fetchUploads();
   }, [filter, refreshTrigger]);
 
-  const deleteUpload = async (id: string) => {
-    try {
-      setDeleting(id);
-      const response = await fetch(`/api/uploads/${id}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) throw new Error('Failed to delete upload');
-      
-      setUploads(prev => prev.filter(upload => upload.id !== id));
-      toast.success('File deleted successfully');
-    } catch (error) {
-      console.error('Error deleting upload:', error);
-      toast.error('Failed to delete file');
-    } finally {
-      setDeleting(null);
-    }
-  };
-
-  const formatFileSize = (bytes: number) => {
+const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
@@ -175,15 +155,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                   >
                     <ExternalLink className="w-4 h-4" />
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => deleteUpload(upload.id)}
-                    disabled={deleting === upload.id}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                 </div>
               </div>
               
               {/* File Info */}
