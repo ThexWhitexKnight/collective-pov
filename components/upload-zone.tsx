@@ -14,8 +14,6 @@ import { toast } from 'sonner';
 interface FilePreview {
   file: File;
   preview: string;
-  thumbnail?: string; // Add this for the generated thumbnail
-  thumbnailBlob?: Blob; // Add this for the thumbnail blob
   isValid: boolean;
   error?: string;
   type: 'image' | 'video';
@@ -24,55 +22,6 @@ interface FilePreview {
 interface UploadZoneProps {
   onUploadComplete: () => void;
 }
-
-// Create thumbnail from image
-const createImageThumbnail = (file: File, maxWidth: number = 200, maxHeight: number = 200): Promise<{ dataUrl: string; blob: Blob }> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    if (!ctx) {
-      reject(new Error('Canvas not available'));
-      return;
-    }
-
-    img.onload = () => {
-      // Calculate dimensions maintaining aspect ratio
-      let { width, height } = img;
-      
-      if (width > height) {
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width;
-          width = maxWidth;
-        }
-      } else {
-        if (height > maxHeight) {
-          width = (width * maxHeight) / height;
-          height = maxHeight;
-        }
-      }
-
-      canvas.width = width;
-      canvas.height = height;
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      canvas.toBlob((blob) => {
-        if (blob) {
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-          resolve({ dataUrl, blob });
-        } else {
-          reject(new Error('Failed to create thumbnail'));
-        }
-      }, 'image/jpeg', 0.8);
-    };
-
-    img.onerror = () => reject(new Error('Failed to load image'));
-    img.src = URL.createObjectURL(file);
-  });
-};
-
-export default function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
 export default function UploadZone({ onUploadComplete }: UploadZoneProps) {
   const [files, setFiles] = useState<FilePreview[]>([]);
@@ -107,27 +56,15 @@ export default function UploadZone({ onUploadComplete }: UploadZoneProps) {
         }
       }
 
-      // Generate thumbnail if valid image
-let thumbnail: string | undefined;
-let thumbnailBlob: Blob | undefined;
-
-if (finalValidation.isValid && finalValidation.fileType === 'image') {
-  try {
-    const thumbnailData = await createImageThumbnail(file);
-    thumbnail = thumbnailData.dataUrl;
-    thumbnailBlob = thumbnailData.blob;
-  } catch (error) {
-    console.warn('Failed to generate thumbnail:', error);
-  }
-}
-
-newFiles.push({
-  file,
-  preview,
-  isValid: finalValidation.isValid,
-  error: finalValidation.error,
-  type: finalValidation.fileType as 'image' | 'video'
-});
+      const preview = URL.createObjectURL(file);
+      
+      newFiles.push({
+        file,
+        preview,
+        isValid: finalValidation.isValid,
+        error: finalValidation.error,
+        type: finalValidation.fileType as 'image' | 'video'
+      });
     }
     
     setFiles(prev => [...prev, ...newFiles]);
@@ -183,13 +120,8 @@ newFiles.push({
       for (let i = 0; i < validFiles.length; i++) {
         const filePreview = validFiles[i];
         const formData = new FormData();
-formData.append('file', filePreview.file);
-formData.append('isPublic', isPublic.toString());
-
-// Add thumbnail if available
-if (filePreview.thumbnailBlob) {
-  formData.append('thumbnail', filePreview.thumbnailBlob, `thumb_${filePreview.file.name}.jpg`);
-}
+        formData.append('file', filePreview.file);
+        formData.append('isPublic', isPublic.toString());
 
         const response = await fetch('/api/upload', {
           method: 'POST',
