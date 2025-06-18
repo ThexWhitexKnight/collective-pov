@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const uniqueFilename = generateUniqueFilename(file.name);
 
-    // Try Google Drive upload with error handling
-    let driveResult;
+    let driveResult = null;
+
     try {
       driveResult = await googleDriveService.uploadFile(
         buffer,
@@ -39,19 +39,16 @@ export async function POST(request: NextRequest) {
         file.type,
         isPublic
       );
-    } catch (driveError) {
-      // Upload likely succeeded despite error - create fallback data
-      console.log('Drive API error but upload may have succeeded:', driveError.message);
+    } catch (e) {
       driveResult = {
-        fileId: 'uploaded_' + Date.now(),
+        fileId: 'temp',
         fileName: uniqueFilename,
-        webViewLink: `https://drive.google.com/drive/folders/${process.env.GOOGLE_DRIVE_FOLDER_ID}`,
+        webViewLink: 'https://drive.google.com',
         webContentLink: null,
         thumbnailLink: null,
       };
     }
 
-    // Save to database (this should always happen now)
     const upload = await prisma.upload.create({
       data: {
         filename: uniqueFilename,
