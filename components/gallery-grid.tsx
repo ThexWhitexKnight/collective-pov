@@ -193,14 +193,7 @@ const formatFileSize = (bytes: number) => {
                         <><EyeOff className="w-3 h-3 mr-1" />Private</>
                       )}
                     </Badge>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => window.open(selectedUpload.driveUrl, '_blank')}
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      Open in Drive
-                    </Button>
+                    
                   </div>
                 </DialogTitle>
               </DialogHeader>
