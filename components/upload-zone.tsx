@@ -65,8 +65,6 @@ let thumbnailBlob: Blob | undefined;
 newFiles.push({
   file,
   preview,
-  thumbnail,        
-  thumbnailBlob,    
   isValid: finalValidation.isValid,
   error: finalValidation.error,
   type: finalValidation.fileType as 'image' | 'video'
