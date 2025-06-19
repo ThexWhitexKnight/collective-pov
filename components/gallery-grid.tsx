@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Image, Video, ExternalLink, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -29,6 +29,7 @@ interface GalleryGridProps {
 
 export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   const [uploads, setUploads] = useState<Upload[]>([]);
+  const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
@@ -63,6 +64,52 @@ const formatFileSize = (bytes: number) => {
 
   const isVideo = (mimeType: string) => mimeType.startsWith('video/');
   const isImage = (mimeType: string) => mimeType.startsWith('image/');
+
+  const generateThumbnail = useCallback((file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new Error('Not an image'));
+      return;
+    }
+
+    const img = new Image();
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      reject(new Error('Canvas not available'));
+      return;
+    }
+
+    img.onload = () => {
+      // Calculate thumbnail size (200x200 max, maintain aspect ratio)
+      let { width, height } = img;
+      const maxSize = 200;
+      
+      if (width > height) {
+        if (width > maxSize) {
+          height = (height * maxSize) / width;
+          width = maxSize;
+        }
+      } else {
+        if (height > maxSize) {
+          width = (width * maxSize) / height;
+          height = maxSize;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      ctx.drawImage(img, 0, 0, width, height);
+      
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      resolve(dataUrl);
+    };
+
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = URL.createObjectURL(file);
+  });
+}, []);
 
   if (loading) {
     return (
