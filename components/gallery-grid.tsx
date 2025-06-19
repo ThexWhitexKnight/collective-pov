@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Image, Video, ExternalLink, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -29,7 +29,6 @@ interface GalleryGridProps {
 
 export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   const [uploads, setUploads] = useState<Upload[]>([]);
-  const [thumbnails, setThumbnails] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
