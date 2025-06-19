@@ -30,27 +30,13 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const uniqueFilename = generateUniqueFilename(file.name);
 
-    // Always assume upload will work (since it does!)
-    let driveResult = {
-      fileId: 'uploaded_' + Date.now(),
-      fileName: uniqueFilename,
-      webViewLink: `https://drive.google.com/drive/folders/${process.env.GOOGLE_DRIVE_FOLDER_ID}`,
-      webContentLink: null,
-      thumbnailLink: null,
-    };
-
-    // Try to get real Google Drive data, but don't fail if it errors
-    try {
-      const realResult = await googleDriveService.uploadFile(
-        buffer,
-        uniqueFilename,
-        file.type,
-        isPublic
-      );
-      driveResult = realResult; // Use real data if available
-    } catch (e) {
-      console.log('Using fallback data (upload still succeeded)');
-    }
+    // Get real Google Drive data with thumbnails
+const driveResult = await googleDriveService.uploadFile(
+  buffer,
+  uniqueFilename,
+  file.type,
+  isPublic
+);
 
     const upload = await prisma.upload.create({
       data: {
