@@ -250,11 +250,13 @@ const formatFileSize = (bytes: number) => {
               <div className="p-6 pt-4">
                 {isImage(selectedUpload.mimeType) ? (
                   <div className="max-h-[60vh] overflow-hidden rounded-lg">
-                    <img
-                      src={getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
-                      alt="Only Thumbnail Available for Public Display"
-                      className="w-full h-full object-contain"
-                    />
+                    <iframe 
+  src={`https://drive.google.com/file/d/${fileId}/preview`}
+  width="100%" 
+  height="400px"
+  frameBorder="0"
+  className="rounded-lg"
+/>
                   </div>
                 ) : (
                   <div className="max-h-[60vh] overflow-hidden rounded-lg bg-black">
