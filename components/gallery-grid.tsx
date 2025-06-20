@@ -28,6 +28,25 @@ interface GalleryGridProps {
 }
 
 export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
+  const getDirectDriveUrl = (driveUrl: string, mimeType: string) => {
+  // Extract file ID from Google Drive URL
+  const fileIdMatch = driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!fileIdMatch) return driveUrl;
+  
+  const fileId = fileIdMatch[1];
+  
+  // For images, use the direct view URL
+  if (isImage(mimeType)) {
+    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+  }
+  
+  // For videos, use the direct download URL
+  if (isVideo(mimeType)) {
+    return `https://drive.google.com/uc?export=download&id=${fileId}`;
+  }
+  
+  return driveUrl;
+};
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -114,30 +133,56 @@ const formatFileSize = (bytes: number) => {
           {uploads.map((upload) => (
             <Card key={upload.id} className="group overflow-hidden">
               <div className="aspect-square relative bg-muted">
-                {isImage(upload.mimeType) ? (
-                  upload.thumbnailUrl ? (
-                    <img
-                      src={upload.thumbnailUrl}
-                      alt="img thumb"
-                      className="w-full h-full object-cover cursor-pointer"
-                      onClick={() => setSelectedUpload(upload)}
-                    />
-                  ) : (
-                    <div 
-                      className="w-full h-full flex items-center justify-center cursor-pointer"
-                      onClick={() => setSelectedUpload(upload)}
-                    >
-                      <Image className="w-12 h-12 text-muted-foreground" />
-                    </div>
-                  )
-                ) : (
-                  <div 
-                    className="w-full h-full flex items-center justify-center cursor-pointer"
-                    onClick={() => setSelectedUpload(upload)}
-                  >
-                    <Video className="w-12 h-12 text-muted-foreground" />
-                  </div>
-                )}
+               {isImage(upload.mimeType) ? (
+  upload.thumbnailUrl ? (
+    <img
+      src={upload.thumbnailUrl}
+      alt="img thumb"
+      className="w-full h-full object-cover cursor-pointer"
+      onClick={() => setSelectedUpload(upload)}
+    />
+  ) : (
+    <div 
+      className="w-full h-full flex items-center justify-center cursor-pointer"
+      onClick={() => setSelectedUpload(upload)}
+    >
+      <Image className="w-12 h-12 text-muted-foreground" />
+    </div>
+  )
+) : isVideo(upload.mimeType) ? (
+  upload.thumbnailUrl ? (
+    <div className="relative w-full h-full cursor-pointer" onClick={() => setSelectedUpload(upload)}>
+      <img
+        src={upload.thumbnailUrl}
+        alt="video thumb"
+        className="w-full h-full object-cover"
+      />
+      {/* Video play overlay */}
+      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+        <div className="bg-white/90 rounded-full p-2">
+          <Video className="w-6 h-6 text-gray-800" />
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div 
+      className="w-full h-full flex items-center justify-center cursor-pointer bg-gray-100"
+      onClick={() => setSelectedUpload(upload)}
+    >
+      <div className="text-center">
+        <Video className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+        <span className="text-xs text-muted-foreground">Video</span>
+      </div>
+    </div>
+  )
+) : (
+  <div 
+    className="w-full h-full flex items-center justify-center cursor-pointer"
+    onClick={() => setSelectedUpload(upload)}
+  >
+    <ExternalLink className="w-12 h-12 text-muted-foreground" />
+  </div>
+)}
                 
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
