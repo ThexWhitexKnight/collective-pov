@@ -42,7 +42,7 @@ export class GoogleDriveService {
     const response = await this.drive.files.create({
       requestBody: fileMetadata,
       media: media,
-      fields: 'id,name,thumbnailLink',
+      fields: 'id,name',
     });
 
     if (isPublic) {
