@@ -243,46 +243,26 @@ const formatFileSize = (bytes: number) => {
                 </DialogTitle>
               </DialogHeader>
               
-             <div className="p-6 pt-4">
-  {isImage(selectedUpload.mimeType) ? (
-    <div className="max-h-[60vh] overflow-hidden rounded-lg">
-      <img
-        src={getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
-        alt="img display"
-        className="w-full h-full object-contain"
-        onError={(e) => {
-          // Fallback to thumbnail if direct URL fails
-          const target = e.target as HTMLImageElement;
-          if (selectedUpload.thumbnailUrl && target.src !== selectedUpload.thumbnailUrl) {
-            target.src = selectedUpload.thumbnailUrl;
-          }
-        }}
-      />
-    </div>
-  ) : isVideo(selectedUpload.mimeType) ? (
-    <div className="max-h-[60vh] overflow-hidden rounded-lg bg-black">
-      <video
-        controls
-        className="w-full h-full"
-        src={getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
-        poster={selectedUpload.thumbnailUrl} // Use thumbnail as poster
-        onError={() => {
-          toast.error('Unable to load video. Please try downloading the file directly.');
-        }}
-      >
-        Your browser does not support the video tag.
-      </video>
-    </div>
-  ) : (
-    <div className="max-h-[60vh] flex items-center justify-center rounded-lg bg-muted">
-      <div className="text-center">
-        
-      </div>
-    </div>
-  )}
-  
-  {/* Rest of the modal content remains the same */}
-</div>
+              <div className="p-6 pt-4">
+                {isImage(selectedUpload.mimeType) ? (
+                  <div className="max-h-[60vh] overflow-hidden rounded-lg">
+                    <img
+                      src={selectedUpload.driveUrl}
+                      alt="img display"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                ) : (
+                  <div className="max-h-[60vh] overflow-hidden rounded-lg bg-black">
+                    <video
+                      controls
+                      className="w-full h-full"
+                      src={selectedUpload.driveUrl}
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                )}
                 
                 <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                   <div>
