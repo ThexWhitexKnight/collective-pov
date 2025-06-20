@@ -67,7 +67,7 @@ try {
         driveUrl: driveResult.webViewLink,
         thumbnailUrl: driveResult.thumbnailLink,
         isPublic: isPublic,
-        driveUrl: `https://drive.google.com/file/d/${driveResult.fileId}/view`,
+        driveUrl: `https://drive.google.com/file/d/${driveResult.fileId}`,
       },
     });
 
