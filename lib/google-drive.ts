@@ -58,6 +58,8 @@ export class GoogleDriveService {
     return {
       fileId: response.data.id,
       fileName: response.data.name,
+      webViewLink: response.data.webViewLink,
+      webContentLink: response.data.webContentLink,
       thumbnailLink: response.data.thumbnailLink,
     };
   }
