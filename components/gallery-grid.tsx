@@ -273,7 +273,16 @@ const formatFileSize = (bytes: number) => {
         Your browser does not support the video tag.
       </video>
     </div>
-                )}
+  ) : (
+    <div className="max-h-[60vh] flex items-center justify-center rounded-lg bg-muted">
+      <div className="text-center">
+        
+      </div>
+    </div>
+  )}
+  
+  {/* Rest of the modal content remains the same */}
+</div>
                 
                 <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                   <div>
