@@ -101,7 +101,13 @@ async uploadFileSimple(
     });
   }
 
-  return { fileId: response.data.id, fileName: fileName };
+  return { 
+  fileId: response.data.id, 
+  fileName: fileName,
+  webViewLink: null,        // ← Add these missing fields
+  webContentLink: null,     // ← Add these missing fields
+  thumbnailLink: null       // ← Add these missing fields (will be set later)
+};
 }
   
   async getFileMetadata(fileId: string) {
