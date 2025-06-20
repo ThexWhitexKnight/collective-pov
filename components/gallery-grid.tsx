@@ -137,17 +137,14 @@ const formatFileSize = (bytes: number) => {
           {uploads.map((upload) => (
             <Card key={upload.id} className="group overflow-hidden">
               <div className="aspect-square relative bg-muted">
-               {isImage(selectedUpload.mimeType) ? (
-  <div className="max-h-[60vh] overflow-hidden rounded-lg">
-    <iframe 
-      src={`https://drive.google.com/file/d/${selectedUpload.driveFileId}/preview`}
-      width="100%" 
-      height="400"
-      style={{ border: 'none' }}
-      className="rounded-lg"
-      title="Image preview"
+               {isImage(upload.mimeType) ? (
+  upload.thumbnailUrl ? (
+    <img
+      src={upload.thumbnailUrl}
+      alt="img thumb"
+      className="w-full h-full object-cover cursor-pointer"
+      onClick={() => setSelectedUpload(upload)}
     />
-  </div>
   ) : (
     <div 
       className="w-full h-full flex items-center justify-center cursor-pointer"
