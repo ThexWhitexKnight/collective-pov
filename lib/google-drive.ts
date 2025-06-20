@@ -78,6 +78,18 @@ export class GoogleDriveService {
     });
     return response.data;
   }
+  async getThumbnailUrl(fileId: string) {
+  try {
+    const response = await this.drive.files.get({
+      fileId: fileId,
+      fields: 'thumbnailLink',
+    });
+    return response.data.thumbnailLink || null;
+  } catch (error) {
+    console.error('Failed to get thumbnail:', error);
+    return null;
+  }
+}
 }
 
 export const googleDriveService = new GoogleDriveService();
