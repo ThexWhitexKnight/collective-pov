@@ -29,15 +29,19 @@ interface GalleryGridProps {
 
 export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   const getDirectDriveUrl = (driveUrl: string, mimeType: string) => {
-  // Extract file ID from Google Drive URL
+  console.log('Original driveUrl:', driveUrl);
+    // Extract file ID from Google Drive URL
   const fileIdMatch = driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
   if (!fileIdMatch) return driveUrl;
   
   const fileId = fileIdMatch[1];
+  console.log('Extracted fileId:', fileId);
   
   // For images, use the direct view URL
   if (isImage(mimeType)) {
-    const directUrl = `https://drive.google.com/file/d/${fileId}/view`;
+    const directUrl = `https://drive.google.com/uc?id=${fileId}`;
+    console.log('Generated directUrl:', directUrl);
+    return directUrl;
   }
   
   // For videos, use the direct download URL
