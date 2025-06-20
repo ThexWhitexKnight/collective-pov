@@ -71,6 +71,39 @@ export class GoogleDriveService {
     return true;
   }
 
+async uploadFileSimple(
+  fileBuffer: Buffer,
+  fileName: string,
+  mimeType: string,
+  isPublic: boolean = true
+) {
+  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+  
+  const fileMetadata = {
+    name: fileName,
+    parents: folderId ? [folderId] : undefined,
+  };
+
+  const stream = Readable.from([fileBuffer]);
+  const media = { mimeType, body: stream };
+
+  // Simple upload - NO metadata request
+  const response = await this.drive.files.create({
+    requestBody: fileMetadata,
+    media: media,
+    fields: 'id', // ONLY get file ID
+  });
+
+  if (isPublic) {
+    await this.drive.permissions.create({
+      fileId: response.data.id,
+      requestBody: { role: 'reader', type: 'anyone' },
+    });
+  }
+
+  return { fileId: response.data.id, fileName: fileName };
+}
+  
   async getFileMetadata(fileId: string) {
     const response = await this.drive.files.get({
       fileId: fileId,
