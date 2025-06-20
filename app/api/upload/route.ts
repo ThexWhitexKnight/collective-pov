@@ -64,7 +64,6 @@ try {
         mimeType: file.type,
         fileSize: file.size,
         driveFileId: driveResult.fileId,
-        driveUrl: driveResult.webViewLink,
         thumbnailUrl: driveResult.thumbnailLink,
         isPublic: isPublic,
         driveUrl: `https://drive.google.com/file/d/${driveResult.fileId}`,
