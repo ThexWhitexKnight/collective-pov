@@ -74,7 +74,7 @@ export class GoogleDriveService {
   async getFileMetadata(fileId: string) {
     const response = await this.drive.files.get({
       fileId: fileId,
-      fields: 'id,name,mimeType,size,createdTime,webViewLink,webContentLink,thumbnailLink',
+      fields: 'id,name,thumbnailLink',
     });
     return response.data;
   }
