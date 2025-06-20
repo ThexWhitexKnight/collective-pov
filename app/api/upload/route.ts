@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 // Step 1: Upload file (existing working method)
 let driveResult;
 try {
-  driveResult = await googleDriveService.uploadFile(
+  driveResult = await googleDriveService.uploadFileSimple(
     buffer,
     uniqueFilename,
     file.type,
