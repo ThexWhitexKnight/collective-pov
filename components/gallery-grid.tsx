@@ -247,8 +247,8 @@ const formatFileSize = (bytes: number) => {
                 {isImage(selectedUpload.mimeType) ? (
                   <div className="max-h-[60vh] overflow-hidden rounded-lg">
                     <img
-                      src={selectedUpload.driveUrl}
-                      alt="img display"
+                      src={getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
+                      alt="Only Thumbnail Available for Public Display"
                       className="w-full h-full object-contain"
                     />
                   </div>
