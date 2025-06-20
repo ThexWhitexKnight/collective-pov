@@ -19,47 +19,51 @@ export class GoogleDriveService {
     this.drive = google.drive({ version: 'v3', auth });
   }
 
-async uploadFile(
-  fileBuffer: Buffer,
-  fileName: string,
-  mimeType: string,
-  isPublic: boolean = true
-) {
-  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
-  
-  const fileMetadata = {
-    name: fileName,
-    parents: folderId ? [folderId] : undefined,
-  };
+  async uploadFile(
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string,
+    isPublic: boolean = true
+  ) {
+    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
+    
+    const fileMetadata = {
+      name: fileName,
+      parents: folderId ? [folderId] : undefined,
+    };
 
-  const stream = Readable.from([fileBuffer]);
-  const media = { mimeType, body: stream };
+    const stream = Readable.from([fileBuffer]);
 
-  // Simple upload - just get the file ID
-  const response = await this.drive.files.create({
-    requestBody: fileMetadata,
-    media: media,
-    fields: 'id', // Only get the file ID
-  });
+    const media = {
+      mimeType,
+      body: stream,
+    };
 
-  if (isPublic) {
-    await this.drive.permissions.create({
-      fileId: response.data.id,
-      requestBody: { role: 'reader', type: 'anyone' },
+    const response = await this.drive.files.create({
+      requestBody: fileMetadata,
+      media: media,
+      fields: 'id,name,thumbnailLink',
     });
+
+    if (isPublic) {
+      await this.drive.permissions.create({
+        fileId: response.data.id,
+        requestBody: {
+          role: 'reader',
+          type: 'anyone',
+        },
+      });
+    }
+
+    return {
+      fileId: response.data.id,
+      fileName: response.data.name,
+      webViewLink: response.data.webViewLink,
+      webContentLink: response.data.webContentLink,
+      thumbnailLink: response.data.thumbnailLink,
+    };
   }
 
-  return { fileId: response.data.id };
-}
-
-async getFileWithThumbnail(fileId: string) {
-  const response = await this.drive.files.get({
-    fileId: fileId,
-    fields: 'id,name,thumbnailLink',
-  });
-  return response.data;
-}
-  
   async deleteFile(fileId: string) {
     await this.drive.files.delete({
       fileId: fileId,
