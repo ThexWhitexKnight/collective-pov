@@ -33,12 +33,12 @@ export async function POST(request: NextRequest) {
 // Step 1: Upload file (existing working method)
 let driveResult;
 try {
-  driveResult = await googleDriveService.uploadFile(
-    buffer,
-    uniqueFilename,
-    file.type,
-    isPublic
-  );
+  driveResult = await googleDriveService.uploadFileSimple( // ← Change this line
+  buffer,
+  uniqueFilename,
+  file.type,
+  isPublic
+);
   console.log('File uploaded successfully:', driveResult.fileId);
   
   // Step 2: Get thumbnail separately (new safe method)
