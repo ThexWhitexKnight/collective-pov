@@ -39,7 +39,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   
   // For images, use the direct view URL
   if (isImage(mimeType)) {
-    const directUrl = `https://drive.google.com/uc?id=${fileId}`;
+    const directUrl = `https://drive.usercontent.google.com/download?id=${fileId}`;
     console.log('Generated directUrl:', directUrl);
     return directUrl;
   }
