@@ -41,7 +41,10 @@ try {
   );
   console.log('Got real Google Drive data with thumbnail:', driveResult.thumbnailLink);
 } catch (e) {
-  console.log('Google Drive API failed, using fallback data');
+  console.error('Google Drive API failed:', e);
+  console.error('Error details:', e.message);
+  console.error('Error stack:', e.stack);
+  console.log('Using fallback data');
   // Fallback data (but files still uploaded to Drive)
   driveResult = {
     fileId: 'uploaded_' + Date.now(),
