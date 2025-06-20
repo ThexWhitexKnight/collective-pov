@@ -37,7 +37,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   
   // For images, use the direct view URL
   if (isImage(mimeType)) {
-    return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    const directUrl = `https://drive.google.com/file/d/${fileId}/view`;
   }
   
   // For videos, use the direct download URL
