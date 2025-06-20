@@ -37,7 +37,7 @@ try {
   buffer,
   uniqueFilename,
   file.type,
-  isPublic
+  isPublic,
 );
   console.log('File uploaded successfully:', driveResult.fileId);
   
