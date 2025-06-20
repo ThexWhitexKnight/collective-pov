@@ -42,7 +42,7 @@ export class GoogleDriveService {
     const response = await this.drive.files.create({
       requestBody: fileMetadata,
       media: media,
-      fields: 'id,name,webViewLink,webContentLink,thumbnailLink',
+      fields: 'id,name,thumbnailLink',
     });
 
     if (isPublic) {
@@ -58,8 +58,6 @@ export class GoogleDriveService {
     return {
       fileId: response.data.id,
       fileName: response.data.name,
-      webViewLink: response.data.webViewLink,
-      webContentLink: response.data.webContentLink,
       thumbnailLink: response.data.thumbnailLink,
     };
   }
