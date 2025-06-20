@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const uniqueFilename = generateUniqueFilename(file.name);
 
-// Try to get real Google Drive data with thumbnails
+// Step 1: Upload file (existing working method)
 let driveResult;
 try {
   driveResult = await googleDriveService.uploadFile(
@@ -39,17 +39,16 @@ try {
     file.type,
     isPublic
   );
-  console.log('Got real Google Drive data with thumbnail:', driveResult.thumbnailLink);
+  console.log('File uploaded successfully:', driveResult.fileId);
+  
+  // Step 2: Get thumbnail separately (new safe method)
+  const thumbnailUrl = await googleDriveService.getThumbnailUrl(driveResult.fileId);
+  driveResult.thumbnailLink = thumbnailUrl;
+  console.log('Thumbnail URL:', thumbnailUrl);
+  
 } catch (e) {
-  console.error('Google Drive API failed:', e);
-  if (e instanceof Error) {
-    console.error('Error message:', e.message);
-    console.error('Error stack:', e.stack);
-  } else {
-    console.error('Unknown error type:', typeof e);
-  }
-  console.log('Using fallback data');
-  // Fallback data (but files still uploaded to Drive)
+  console.error('Upload failed:', e);
+  // Fallback data
   driveResult = {
     fileId: 'uploaded_' + Date.now(),
     fileName: uniqueFilename,
@@ -58,7 +57,6 @@ try {
     thumbnailLink: null,
   };
 }
-
     const upload = await prisma.upload.create({
       data: {
         filename: uniqueFilename,
