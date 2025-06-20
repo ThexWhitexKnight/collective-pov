@@ -38,13 +38,13 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   console.log('Extracted fileId:', fileId);
   
   if (isImage(mimeType)) {
-    const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+    const directUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=view`;
     console.log('Generated directUrl:', directUrl);
     return directUrl;
   }
   
   if (isVideo(mimeType)) {
-    const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+    const directUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
     console.log('Generated video directUrl:', directUrl);
     return directUrl;
   }
