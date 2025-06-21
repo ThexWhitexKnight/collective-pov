@@ -117,7 +117,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   return (
     <div className="space-y-6">
       {/* Filter Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+     {/* <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <h2 className="text-2xl font-bold">Gallery</h2>
         <Select value={filter} onValueChange={setFilter}>
           <SelectTrigger className="w-full sm:w-48">
@@ -129,7 +129,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
             <SelectItem value="private">Private Only</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </div>*/}
 
       {/* Gallery Grid */}
       {uploads.length === 0 ? (
@@ -139,7 +139,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
               <Image className="w-8 h-8 text-muted-foreground" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">No uploads found</h3>
+              <h3 className="text-lg font-semibold">Get the Album Started!</h3>
               <p className="text-muted-foreground">
                 {filter === 'all' 
                   ? 'Start by uploading some photos or videos'
@@ -178,7 +178,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                       <div className="relative w-full h-full cursor-pointer" onClick={() => setSelectedUpload(upload)}>
                         <img
                           src={videoThumbnail}
-                          alt="Video thumbnail"
+                          alt="Just a moment. Video thumbnail is still generating"
                           className="w-full h-full object-cover"
                         />
                         {/* Video play overlay */}
@@ -254,7 +254,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                   <div className="flex items-center justify-center max-h-[60vh]">
                     <img
                       src={selectedUpload.thumbnailUrl ? getHighQualityThumbnailUrl(selectedUpload.thumbnailUrl) : getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
-                      alt="Full size image"
+                      alt="Just a moment. Video thumbnail is still generating"
                       className="max-w-full max-h-[60vh] object-contain rounded-lg"
                       onError={(e) => {
                         // Fallback to direct drive URL if high quality thumbnail fails
@@ -274,7 +274,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                         <div className="relative max-w-full max-h-[60vh]">
                           <img
                             src={videoThumbnail}
-                            alt="Video thumbnail - Click to play"
+                            alt="Video thumbnail only"
                             className="max-w-full max-h-[60vh] object-contain"
                           />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/30">
@@ -283,7 +283,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                             </div>
                           </div>
                           <p className="absolute bottom-4 left-4 text-white text-sm bg-black/50 px-2 py-1 rounded">
-                            Video preview - Full playback not available
+                            Video thumbnail preview only - Full playback not available
                           </p>
                         </div>
                       ) : (
