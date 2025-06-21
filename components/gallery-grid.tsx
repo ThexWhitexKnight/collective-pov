@@ -283,7 +283,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                             </div>
                           </div>
                           <p className="absolute bottom-4 left-4 text-white text-sm bg-black/50 px-2 py-1 rounded">
-                            Video thumbnail preview only - Full playback not available
+                            Video thumbnail for UPLOAD CONFIRMATION only - Full playback NOT available
                           </p>
                         </div>
                       ) : (
