@@ -39,7 +39,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold">The Collective POV Experience</h1>
-                <p align="center" className="text-sm text-muted-foreground hidden sm:block">
+                <p className="text-sm text-muted-foreground hidden sm:block">
                   by 2IP Events & White Knights Media
                 </p>
               </div>
