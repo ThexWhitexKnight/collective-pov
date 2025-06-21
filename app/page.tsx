@@ -56,7 +56,7 @@ export default function HomePage() {
             Gift Them Your Memories
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            The Main Attraction has requested your help! They want to re-experience the occasion again and again, but from your perspective. Help them fill this gallery with photos and videos of the day's moments. 
+            The Guests of Honor have requested YOU! <br>Help them experience the day again and again, by sharing YOUR perspective.</br> <br>Help them fill this gallery with photos and videos of the day's moments.</br> 
           </p>
         </div>
 
@@ -94,7 +94,7 @@ export default function HomePage() {
                 </div>
                 <h3 className="text-2xl font-bold mb-2">The Collective POV Gallery</h3>
                 <p className="text-muted-foreground">
-                  View all uploaded photos and videos
+                  Video uploads take a moment to generate thumbnails. Please be patient, or share more photos and videos while we process your uploads.
                 </p>
               </div>
               <GalleryGrid refreshTrigger={refreshTrigger} />
