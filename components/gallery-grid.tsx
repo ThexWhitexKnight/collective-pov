@@ -36,10 +36,8 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
     const fileId = fileIdMatch[1];
     console.log('Extracted fileId:', fileId);
     
-    // Updated: More reliable image URL format
     if (isImage(mimeType)) {
-      // Try multiple URL formats for better mobile compatibility
-      const directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+      const directUrl = `https://drive.usercontent.google.com/download?id=${fileId}&export=view`;
       console.log('Generated directUrl:', directUrl);
       return directUrl;
     }
@@ -67,24 +65,6 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
     
     // Replace the default small size (s220) with a larger size (s800) for better quality
     return thumbnailUrl.replace(/=s\d+/, '=s800');
-  };
-
-  // New function to get mobile-friendly image URL
-  const getMobileImageUrl = (upload: Upload) => {
-    // If we have a thumbnail URL, try to use it first
-    if (upload.thumbnailUrl) {
-      return upload.thumbnailUrl;
-    }
-    
-    // Otherwise, extract file ID and use Google Drive thumbnail API
-    const fileIdMatch = upload.driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (fileIdMatch) {
-      const fileId = fileIdMatch[1];
-      // This format works better on mobile devices
-      return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
-    }
-    
-    return upload.driveUrl;
   };
 
   const [uploads, setUploads] = useState<Upload[]>([]);
@@ -136,16 +116,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
 
   return (
     <div className="space-y-6">
-      {/* Gallery Header with Icons */}
-      <div className="flex flex-col items-center justify-center space-y-2">
-        <div className="flex items-center gap-3">
-          <Image className="w-8 h-8 text-muted-foreground" />
-          <Video className="w-8 h-8 text-muted-foreground" />
-        </div>
-        <h2 className="text-2xl font-bold text-center">The Collective POV Gallery</h2>
-      </div>
-
-      {/* Filter Controls - COMMENTED OUT
+      {/* Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <h2 className="text-2xl font-bold">Gallery</h2>
         <Select value={filter} onValueChange={setFilter}>
@@ -159,7 +130,6 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
           </SelectContent>
         </Select>
       </div>
-      */}
 
       {/* Gallery Grid */}
       {uploads.length === 0 ? (
@@ -186,32 +156,17 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
             <Card key={upload.id} className="group overflow-hidden">
               <div className="aspect-square relative bg-muted">
                 {isImage(upload.mimeType) ? (
-                  // Fixed: Use mobile-friendly image URL
+                  // Fixed: Use direct drive URL for images if thumbnail fails
                   <img
-                    src={getMobileImageUrl(upload)}
+                    src={upload.thumbnailUrl || getDirectDriveUrl(upload.driveUrl, upload.mimeType)}
                     alt="Image thumbnail"
                     className="w-full h-full object-cover cursor-pointer"
                     onClick={() => setSelectedUpload(upload)}
-                    loading="lazy"
-                    crossOrigin="anonymous"
                     onError={(e) => {
-                      // Try alternative URL formats on error
+                      // Fallback to direct drive URL if thumbnail fails
                       const target = e.target as HTMLImageElement;
-                      const currentSrc = target.src;
-                      
-                      const fileIdMatch = upload.driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-                      if (fileIdMatch) {
-                        const fileId = fileIdMatch[1];
-                        const fallbackUrls = [
-                          `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`,
-                          `https://drive.google.com/uc?export=view&id=${fileId}`,
-                          `https://lh3.googleusercontent.com/d/${fileId}=w400`
-                        ];
-                        
-                        const nextUrl = fallbackUrls.find(url => url !== currentSrc);
-                        if (nextUrl) {
-                          target.src = nextUrl;
-                        }
+                      if (target.src !== getDirectDriveUrl(upload.driveUrl, upload.mimeType)) {
+                        target.src = getDirectDriveUrl(upload.driveUrl, upload.mimeType);
                       }
                     }}
                   />
@@ -225,8 +180,6 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                           src={videoThumbnail}
                           alt="Video thumbnail"
                           className="w-full h-full object-cover"
-                          loading="lazy"
-                          crossOrigin="anonymous"
                         />
                         {/* Video play overlay */}
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -297,30 +250,17 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
               
               <div className="p-6 pt-4">
                 {isImage(selectedUpload.mimeType) ? (
-                  // Fixed: Center image in popover with mobile-friendly URL
+                  // Fixed: Center image in popover
                   <div className="flex items-center justify-center max-h-[60vh]">
                     <img
-                      src={getMobileImageUrl(selectedUpload)}
+                      src={selectedUpload.thumbnailUrl ? getHighQualityThumbnailUrl(selectedUpload.thumbnailUrl) : getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
                       alt="Full size image"
                       className="max-w-full max-h-[60vh] object-contain rounded-lg"
-                      crossOrigin="anonymous"
                       onError={(e) => {
-                        // Fallback chain for popover images
+                        // Fallback to direct drive URL if high quality thumbnail fails
                         const target = e.target as HTMLImageElement;
-                        const fileIdMatch = selectedUpload.driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-                        if (fileIdMatch) {
-                          const fileId = fileIdMatch[1];
-                          const currentSrc = target.src;
-                          const fallbackUrls = [
-                            `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`,
-                            `https://drive.google.com/uc?export=view&id=${fileId}`,
-                            `https://lh3.googleusercontent.com/d/${fileId}=w800`
-                          ];
-                          
-                          const nextUrl = fallbackUrls.find(url => url !== currentSrc);
-                          if (nextUrl) {
-                            target.src = nextUrl;
-                          }
+                        if (target.src !== getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)) {
+                          target.src = getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType);
                         }
                       }}
                     />
@@ -336,7 +276,6 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                             src={videoThumbnail}
                             alt="Video thumbnail - Click to play"
                             className="max-w-full max-h-[60vh] object-contain"
-                            crossOrigin="anonymous"
                           />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                             <div className="bg-white/90 rounded-full p-4">
