@@ -123,3 +123,32 @@ video::-webkit-media-controls-panel {
 .focus-visible:focus {
   @apply outline-none ring-2 ring-ring ring-offset-2;
 }
+/* Mobile popover image constraints */
+@media (max-width: 768px) {
+  /* Dialog content mobile adjustments */
+  [data-radix-dialog-content] {
+    max-width: 95vw !important;
+    max-height: 95vh !important;
+    margin: 0 !important;
+  }
+  
+  /* Popover image mobile sizing */
+  .popover-image-container {
+    max-height: 70vh !important;
+  }
+  
+  .popover-image-container img {
+    max-width: 100% !important;
+    max-height: 70vh !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+  }
+  
+  .popover-image-container video {
+    max-width: 100% !important;
+    max-height: 70vh !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+}
