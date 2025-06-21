@@ -59,6 +59,12 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   const fileId = fileIdMatch[1];
   return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h400`;
 };
+  const getHighQualityThumbnailUrl = (thumbnailUrl: string) => {
+  if (!thumbnailUrl) return thumbnailUrl;
+  
+  // Replace the default small size (s220) with a larger size (s800) for better quality
+  return thumbnailUrl.replace(/=s\d+/, '=s800');
+};
 
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
@@ -249,13 +255,13 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                 <DialogTitle className="flex items-center justify-between">
                   <span className="truncate">{selectedUpload.originalName}</span>
                   <div className="flex items-center gap-2 ml-4">
-                    <Badge variant={selectedUpload.isPublic ? 'default' : 'secondary'}>
+                   {/* <Badge variant={selectedUpload.isPublic ? 'default' : 'secondary'}>
                       {selectedUpload.isPublic ? (
                         <><Eye className="w-3 h-3 mr-1" />Public</>
                       ) : (
                         <><EyeOff className="w-3 h-3 mr-1" />Private</>
                       )}
-                    </Badge>
+                    </Badge> */}
                   </div>
                 </DialogTitle>
               </DialogHeader>
@@ -264,7 +270,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                {isImage(selectedUpload.mimeType) ? (
   <div className="max-h-[60vh] overflow-hidden rounded-lg">
     <img
-      src={selectedUpload.thumbnailUrl || getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
+      src={selectedUpload.thumbnailUrl ? getHighQualityThumbnailUrl(selectedUpload.thumbnailUrl) : getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
       alt="Only Thumbnail Available for Public Display"
       className="w-full h-full object-contain"
     />
