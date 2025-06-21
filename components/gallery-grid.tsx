@@ -53,18 +53,19 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
 
   // Fixed: Restore video thumbnail generation function
   const getVideoThumbnailUrl = (driveUrl: string) => {
-  const fileIdMatch = driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-  if (!fileIdMatch) return null;
-  
-  const fileId = fileIdMatch[1];
-  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h400`;
-};
+    const fileIdMatch = driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!fileIdMatch) return null;
+    
+    const fileId = fileIdMatch[1];
+    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h400`;
+  };
+
   const getHighQualityThumbnailUrl = (thumbnailUrl: string) => {
-  if (!thumbnailUrl) return thumbnailUrl;
-  
-  // Replace the default small size (s220) with a larger size (s800) for better quality
-  return thumbnailUrl.replace(/=s\d+/, '=s800');
-};
+    if (!thumbnailUrl) return thumbnailUrl;
+    
+    // Replace the default small size (s220) with a larger size (s800) for better quality
+    return thumbnailUrl.replace(/=s\d+/, '=s800');
+  };
 
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,7 +106,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
   if (loading) {
     return (
       // Fixed: Restore smaller grid size for loading state
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
         {[...Array(6)].map((_, i) => (
           <Card key={i} className="aspect-square animate-pulse bg-muted" />
         ))}
@@ -149,27 +150,26 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
           </div>
         </Card>
       ) : (
-        // Fixed: Restore smaller grid size (lg:grid-cols-4 xl:grid-cols-5 gap-2)
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+        // Fixed: Updated grid to show 2 columns on mobile
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
           {uploads.map((upload) => (
             <Card key={upload.id} className="group overflow-hidden">
               <div className="aspect-square relative bg-muted">
                 {isImage(upload.mimeType) ? (
-                  upload.thumbnailUrl ? (
-                    <img
-                      src={upload.thumbnailUrl}
-                      alt="don't worry we still received your file upload"
-                      className="w-full h-full object-cover cursor-pointer"
-                      onClick={() => setSelectedUpload(upload)}
-                    />
-                  ) : (
-                    <div 
-                      className="w-full h-full flex items-center justify-center cursor-pointer"
-                      onClick={() => setSelectedUpload(upload)}
-                    >
-                      <Image className="w-12 h-12 text-muted-foreground" />
-                    </div>
-                  )
+                  // Fixed: Use direct drive URL for images if thumbnail fails
+                  <img
+                    src={upload.thumbnailUrl || getDirectDriveUrl(upload.driveUrl, upload.mimeType)}
+                    alt="Image thumbnail"
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={() => setSelectedUpload(upload)}
+                    onError={(e) => {
+                      // Fallback to direct drive URL if thumbnail fails
+                      const target = e.target as HTMLImageElement;
+                      if (target.src !== getDirectDriveUrl(upload.driveUrl, upload.mimeType)) {
+                        target.src = getDirectDriveUrl(upload.driveUrl, upload.mimeType);
+                      }
+                    }}
+                  />
                 ) : isVideo(upload.mimeType) ? (
                   // Fixed: Use getVideoThumbnailUrl for video thumbnails
                   (() => {
@@ -178,7 +178,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                       <div className="relative w-full h-full cursor-pointer" onClick={() => setSelectedUpload(upload)}>
                         <img
                           src={videoThumbnail}
-                          alt="don't worry we still received your file upload"
+                          alt="Video thumbnail"
                           className="w-full h-full object-cover"
                         />
                         {/* Video play overlay */}
@@ -221,26 +221,15 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                 </div>
               </div>
               
-              {/* File Info */}
-              <div className="p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium truncate flex-1">
-                    {upload.originalName}
-                  </p>
-                  <span>{formatFileSize(upload.fileSize)}</span>
-                  {/* <Badge variant={upload.isPublic ? 'default' : 'secondary'}>
-                    {upload.isPublic ? (
-                      <><Eye className="w-3 h-3 mr-1" />Public</>
-                    ) : (
-                      <><EyeOff className="w-3 h-3 mr-1" />Private</>
-                    )}
-                  </Badge> */}
-                </div>
+              {/* File Info - Made more compact for mobile */}
+              <div className="p-2 sm:p-3 space-y-1">
+                <p className="text-xs sm:text-sm font-medium truncate">
+                  {upload.originalName}
+                </p>
                 
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  
-                  <span>{format(new Date(upload.uploadedAt), 'h:mm a')}</span>
-                  <span>{format(new Date(upload.uploadedAt), 'MMM d, yyyy')}</span>
+                  <span className="text-[10px] sm:text-xs">{formatFileSize(upload.fileSize)}</span>
+                  <span className="text-[10px] sm:text-xs">{format(new Date(upload.uploadedAt), 'MMM d')}</span>
                 </div>
               </div>
             </Card>
@@ -256,38 +245,37 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
               <DialogHeader className="p-6 pb-0">
                 <DialogTitle className="flex items-center justify-between">
                   <span className="truncate">{selectedUpload.originalName}</span>
-                  <div className="flex items-center gap-2 ml-4">
-                   {/* <Badge variant={selectedUpload.isPublic ? 'default' : 'secondary'}>
-                      {selectedUpload.isPublic ? (
-                        <><Eye className="w-3 h-3 mr-1" />Public</>
-                      ) : (
-                        <><EyeOff className="w-3 h-3 mr-1" />Private</>
-                      )}
-                    </Badge> */}
-                  </div>
                 </DialogTitle>
               </DialogHeader>
               
               <div className="p-6 pt-4">
-               {isImage(selectedUpload.mimeType) ? (
-  <div className="popover-image-container max-h-[60vh] overflow-hidden rounded-lg">
-    <img
-      src={selectedUpload.thumbnailUrl ? getHighQualityThumbnailUrl(selectedUpload.thumbnailUrl) : getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
-      alt="Only Thumbnail Available for Public Display"
-      className="w-full h-full object-contain"
-    />
-  </div>
+                {isImage(selectedUpload.mimeType) ? (
+                  // Fixed: Center image in popover
+                  <div className="flex items-center justify-center max-h-[60vh]">
+                    <img
+                      src={selectedUpload.thumbnailUrl ? getHighQualityThumbnailUrl(selectedUpload.thumbnailUrl) : getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
+                      alt="Full size image"
+                      className="max-w-full max-h-[60vh] object-contain rounded-lg"
+                      onError={(e) => {
+                        // Fallback to direct drive URL if high quality thumbnail fails
+                        const target = e.target as HTMLImageElement;
+                        if (target.src !== getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)) {
+                          target.src = getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType);
+                        }
+                      }}
+                    />
+                  </div>
                 ) : isVideo(selectedUpload.mimeType) ? (
-                  // Fixed: Show video thumbnail in pop-over too
-                  <div className="max-h-[60vh] overflow-hidden rounded-lg bg-black">
+                  // Fixed: Center video thumbnail and make it responsive
+                  <div className="flex items-center justify-center max-h-[60vh] bg-black rounded-lg">
                     {(() => {
                       const videoThumbnail = getVideoThumbnailUrl(selectedUpload.driveUrl);
                       return videoThumbnail ? (
-                        <div className="relative w-full h-full">
+                        <div className="relative max-w-full max-h-[60vh]">
                           <img
                             src={videoThumbnail}
                             alt="Video thumbnail - Click to play"
-                            className="w-full h-full object-contain"
+                            className="max-w-full max-h-[60vh] object-contain"
                           />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                             <div className="bg-white/90 rounded-full p-4">
@@ -299,7 +287,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                           </p>
                         </div>
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
+                        <div className="w-full h-full flex items-center justify-center min-h-[200px]">
                           <div className="text-center text-white">
                             <Video className="w-16 h-16 mx-auto mb-4" />
                             <p>Video preview not available</p>
@@ -309,7 +297,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                     })()}
                   </div>
                 ) : (
-                  <div className="max-h-[60vh] overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                  <div className="max-h-[60vh] overflow-hidden rounded-lg bg-muted flex items-center justify-center min-h-[200px]">
                     <div className="text-center">
                       <ExternalLink className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-muted-foreground">File preview not available</p>
@@ -327,7 +315,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                   <div>
                     <span className="font-medium">Uploaded:</span>
                     <span className="ml-2 text-muted-foreground">
-                      {format(new Date(selectedUpload.uploadedAt), 'h:mm a')}
+                      {format(new Date(selectedUpload.uploadedAt), 'MMM d, yyyy h:mm a')}
                     </span>
                   </div>
                 </div>
