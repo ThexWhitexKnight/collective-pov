@@ -261,14 +261,14 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
               </DialogHeader>
               
               <div className="p-6 pt-4">
-                {isImage(selectedUpload.mimeType) ? (
-                  <div className="max-h-[60vh] overflow-hidden rounded-lg">
-                    <img
-                      src={getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
-                      alt="Only Thumbnail Available for Public Display"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
+               {isImage(selectedUpload.mimeType) ? (
+  <div className="max-h-[60vh] overflow-hidden rounded-lg">
+    <img
+      src={selectedUpload.thumbnailUrl || getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
+      alt="Only Thumbnail Available for Public Display"
+      className="w-full h-full object-contain"
+    />
+  </div>
                 ) : isVideo(selectedUpload.mimeType) ? (
                   // Fixed: Show video thumbnail in pop-over too
                   <div className="max-h-[60vh] overflow-hidden rounded-lg bg-black">
