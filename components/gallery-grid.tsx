@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Image, Video, ExternalLink, Eye } from 'lucide-react';
+import { Image, Video, ExternalLink, Eye, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -47,6 +48,22 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
     
     return driveUrl;
   };
+
+  // Get high-resolution thumbnail URL for pop-over display
+  const getHighResThumbnailUrl = (thumbnailUrl: string | undefined) => {
+    if (!thumbnailUrl) return thumbnailUrl;
+    // Change s220 to s800 for larger thumbnails in pop-over
+    return thumbnailUrl.replace(/s220/g, 's800');
+  };
+
+  // Get video thumbnail URL for pop-over
+  const getVideoThumbnailUrl = (driveUrl: string) => {
+  const fileIdMatch = driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!fileIdMatch) return null;
+  
+  const fileId = fileIdMatch[1];
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w800`;
+};
 
   const [uploads, setUploads] = useState<Upload[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,8 +112,17 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
 
   return (
     <div className="space-y-4">
+      {/* CSS Variables for Red Theme */}
+      <style jsx global>{`
+        :root {
+          --brand-red: rgb(203 33 66);
+          --brand-red-hover: rgb(185 28 60);
+          --brand-red-light: rgba(203, 33, 66, 0.1);
+        }
+      `}</style>
+
       {/* Simple Header */}
-      <h2 className="text-xl font-bold text-primary">The Collective POV Gallery</h2>
+      <h2 className="text-xl font-bold text-primary">Contributions</h2>
 
       {/* Gallery Grid */}
       {uploads.length === 0 ? (
@@ -107,14 +133,14 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
             </div>
             <div>
               <h3 className="text-base font-medium text-gray-900">No uploads found</h3>
-              <p className="text-sm text-gray-500">Start the action by uploading some photos or videos</p>
+              <p className="text-sm text-gray-500">Start by uploading some photos or videos</p>
             </div>
           </div>
         </Card>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
           {uploads.map((upload) => (
-            <Card key={upload.id} className="group overflow-hidden bg-white border border-gray-200 hover:border-primary transition-colors cursor-pointer" onClick={() => setSelectedUpload(upload)}>
+            <Card key={upload.id} className="group overflow-hidden bg-white border border-gray-200 hover:border-[var(--brand-red)] transition-colors cursor-pointer" onClick={() => setSelectedUpload(upload)}>
               <div className="aspect-square relative bg-gray-50">
                 {isImage(upload.mimeType) ? (
                   upload.thumbnailUrl ? (
@@ -154,9 +180,9 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                 )}
                 
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div className="absolute inset-0 bg-[var(--brand-red-light)] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <div className="bg-white/90 rounded-full p-2">
-                    <Eye className="w-4 h-4 text-primary" />
+                    <Eye className="w-4 h-4 text-[var(--brand-red)]" />
                   </div>
                 </div>
               </div>
@@ -165,44 +191,83 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
         </div>
       )}
 
-      {/* Full Screen Dialog */}
+      {/* Full Screen Dialog with Improved Pop-over */}
       <Dialog open={!!selectedUpload} onOpenChange={() => setSelectedUpload(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-white">
+        <DialogContent 
+          className="max-w-[90vw] max-h-[90vh] w-full h-full p-0 bg-white border-2 border-[var(--brand-red)] overflow-hidden"
+          style={{
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            width: 'fit-content',
+            height: 'fit-content'
+          }}
+        >
           {selectedUpload && (
-            <>
-              <DialogHeader className="p-4 pb-0">
-                <DialogTitle className="text-lg font-medium text-gray-900 truncate">
-                  {selectedUpload.originalName || 'Upload'}
-                </DialogTitle>
+            <div className="flex flex-col h-full">
+              <DialogHeader className="p-4 pb-2 border-b border-gray-200 bg-[var(--brand-red-light)] flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <DialogTitle className="text-lg font-medium text-gray-900 truncate pr-4">
+                    Low Res Preview (Full Resolution for Honoree(s) Only)
+                  </DialogTitle>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedUpload(null)}
+                    className="flex-shrink-0 w-11 h-11 p-0 hover:bg-[var(--brand-red-light)] rounded-full"
+                    style={{ minWidth: '44px', minHeight: '44px' }}
+                  >
+                    <X className="w-5 h-5 text-[var(--brand-red)]" />
+                  </Button>
+                </div>
               </DialogHeader>
               
-              <div className="p-4 pt-2">
-                {isImage(selectedUpload.mimeType) ? (
-                  <div className="max-h-[60vh] overflow-hidden rounded-lg bg-gray-50">
-                    <img
-                      src={getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
-                      alt="Full size image"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                ) : (
-                  <div className="max-h-[60vh] overflow-hidden rounded-lg bg-black">
-                    <video
-                      controls
-                      className="w-full h-full"
-                      src={selectedUpload.driveUrl}
-                    >
-                      Your browser does not support the video tag.
-                    </video>
-                  </div>
-                )}
+              <div className="flex-1 p-4 overflow-auto">
+                <div className="flex flex-col items-center justify-center min-h-full">
+                  {isImage(selectedUpload.mimeType) ? (
+                    <div className="max-w-full max-h-[calc(90vh-200px)] overflow-hidden rounded-lg bg-gray-50 border border-gray-200">
+                      <img
+                        src={getHighResThumbnailUrl(selectedUpload.thumbnailUrl) || getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
+                        alt="High resolution preview"
+                        className="max-w-full max-h-full object-contain"
+                        style={{
+                          maxWidth: 'calc(90vw - 2rem)',
+                          maxHeight: 'calc(90vh - 200px)'
+                        }}
+                      />
+                    </div>
+                  ) : isVideo(selectedUpload.mimeType) ? (
+                    <div className="max-w-full max-h-[calc(90vh-200px)] overflow-hidden rounded-lg bg-black border border-gray-200">
+                      <video
+                        controls
+                        muted
+                        poster={getVideoThumbnailUrl(selectedUpload.driveUrl) || undefined}
+                        className="max-w-full max-h-full"
+                        style={{
+                          maxWidth: 'calc(90vw - 2rem)',
+                          maxHeight: 'calc(90vh - 200px)'
+                        }}
+                        src={selectedUpload.driveUrl}
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-8 text-center">
+                      <ExternalLink className="w-12 h-12 text-gray-400 mb-4" />
+                      <p className="text-gray-600">Preview not available for this file type</p>
+                    </div>
+                  )}
+                </div>
                 
-                <div className="mt-3 flex justify-between text-sm text-gray-600">
-                  <span>{formatFileSize(selectedUpload.fileSize)}</span>
+                <div className="mt-4 pt-4 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-sm text-gray-600">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                    <span className="font-medium">{selectedUpload.originalName || 'Upload'}</span>
+                    <span>{formatFileSize(selectedUpload.fileSize)}</span>
+                  </div>
                   <span>{format(new Date(selectedUpload.uploadedAt), 'MMM d, yyyy')}</span>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </DialogContent>
       </Dialog>
