@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Image, Video, ExternalLink, Eye, EyeOff, X } from 'lucide-react';
+import { Image, Video, ExternalLink, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -27,6 +27,11 @@ interface GalleryGridProps {
 }
 
 export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
+  const [uploads, setUploads] = useState<Upload[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
+
   const getDirectDriveUrl = (driveUrl: string, mimeType: string) => {
     console.log('Original driveUrl:', driveUrl);
     
@@ -50,20 +55,6 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
     
     return driveUrl;
   };
-
-  // Generate video thumbnail URL from Google Drive
-  const getVideoThumbnailUrl = (driveUrl: string) => {
-    const fileIdMatch = driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (!fileIdMatch) return null;
-    
-    const fileId = fileIdMatch[1];
-// Use Google Drive's thumbnail API with size parameter
-return `https://drive.google.com/thumbnail?id=${fileId}&sz=s400`;  // ✅ Proper syntax + Google Drive
-
-  const [uploads, setUploads] = useState<Upload[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
-  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
 
   const fetchUploads = async () => {
     try {
@@ -163,53 +154,31 @@ return `https://drive.google.com/thumbnail?id=${fileId}&sz=s400`;  // ✅ Proper
                     </div>
                   )
                 ) : isVideo(upload.mimeType) ? (
-                  // Fixed video thumbnail logic
-                  (() => {
-                    const videoThumbnail = upload.thumbnailUrl || getVideoThumbnailUrl(upload.driveUrl);
-                    return videoThumbnail ? (
-                      <div className="relative w-full h-full cursor-pointer" onClick={() => setSelectedUpload(upload)}>
-                        <img
-                          src={videoThumbnail}
-                          alt="video thumb"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // Fallback if thumbnail fails to load
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            const parent = target.parentElement;
-                            if (parent) {
-                              parent.innerHTML = `
-                                <div class="w-full h-full flex items-center justify-center bg-gray-100">
-                                  <div class="text-center">
-                                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                    </svg>
-                                    <span class="text-xs text-gray-500">Video</span>
-                                  </div>
-                                </div>
-                              `;
-                            }
-                          }}
-                        />
-                        {/* Video play overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                          <div className="bg-white/90 rounded-full p-2">
-                            <Video className="w-6 h-6 text-gray-800" />
-                          </div>
+                  upload.thumbnailUrl ? (
+                    <div className="relative w-full h-full cursor-pointer" onClick={() => setSelectedUpload(upload)}>
+                      <img
+                        src={upload.thumbnailUrl}
+                        alt="video thumb"
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Video play overlay */}
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="bg-white/90 rounded-full p-2">
+                          <Video className="w-6 h-6 text-gray-800" />
                         </div>
                       </div>
-                    ) : (
-                      <div 
-                        className="w-full h-full flex items-center justify-center cursor-pointer bg-gray-100"
-                        onClick={() => setSelectedUpload(upload)}
-                      >
-                        <div className="text-center">
-                          <Video className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                          <span className="text-xs text-muted-foreground">Video</span>
-                        </div>
+                    </div>
+                  ) : (
+                    <div 
+                      className="w-full h-full flex items-center justify-center cursor-pointer bg-gray-100"
+                      onClick={() => setSelectedUpload(upload)}
+                    >
+                      <div className="text-center">
+                        <Video className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                        <span className="text-xs text-muted-foreground">Video</span>
                       </div>
-                    );
-                  })()
+                    </div>
+                  )
                 ) : (
                   <div 
                     className="w-full h-full flex items-center justify-center cursor-pointer"
@@ -235,7 +204,7 @@ return `https://drive.google.com/thumbnail?id=${fileId}&sz=s400`;  // ✅ Proper
               <div className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium truncate flex-1">
-                    {upload.originalName}
+                    {upload.originalName || upload.filename}
                   </p>
                   <Badge variant={upload.isPublic ? 'default' : 'secondary'}>
                     {upload.isPublic ? (
@@ -256,78 +225,57 @@ return `https://drive.google.com/thumbnail?id=${fileId}&sz=s400`;  // ✅ Proper
         </div>
       )}
 
-      {/* Mobile-Optimized Full Screen Dialog */}
+      {/* Full Screen Dialog */}
       <Dialog open={!!selectedUpload} onOpenChange={() => setSelectedUpload(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[95vh] sm:max-h-[90vh] p-0 gap-0">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0">
           {selectedUpload && (
             <>
-              {/* Custom Header with Single Close Button */}
-              <div className="flex items-center justify-between p-4 sm:p-6 border-b">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <h2 className="text-lg font-semibold truncate">
-                    {selectedUpload.originalName}
-                  </h2>
-                  <Badge variant={selectedUpload.isPublic ? 'default' : 'secondary'}>
-                    {selectedUpload.isPublic ? (
-                      <><Eye className="w-3 h-3 mr-1" />Public</>
-                    ) : (
-                      <><EyeOff className="w-3 h-3 mr-1" />Private</>
-                    )}
-                  </Badge>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedUpload(null)}
-                  className="ml-2 h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
+              <DialogHeader className="p-6 pb-0">
+                <DialogTitle className="flex items-center justify-between">
+                  <span className="truncate">{selectedUpload.originalName || selectedUpload.filename}</span>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Badge variant={selectedUpload.isPublic ? 'default' : 'secondary'}>
+                      {selectedUpload.isPublic ? (
+                        <><Eye className="w-3 h-3 mr-1" />Public</>
+                      ) : (
+                        <><EyeOff className="w-3 h-3 mr-1" />Private</>
+                      )}
+                    </Badge>
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
               
-              {/* Media Content */}
-              <div className="flex-1 p-2 sm:p-4 overflow-hidden">
+              <div className="p-6 pt-4">
                 {isImage(selectedUpload.mimeType) ? (
-                  <div className="h-full max-h-[60vh] sm:max-h-[65vh] flex items-center justify-center">
+                  <div className="max-h-[60vh] overflow-hidden rounded-lg">
                     <img
                       src={getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
-                      alt="Full size image"
-                      className="max-w-full max-h-full object-contain rounded-lg"
+                      alt="Only Thumbnail Available for Public Display"
+                      className="w-full h-full object-contain"
                     />
                   </div>
-                ) : isVideo(selectedUpload.mimeType) ? (
-                  <div className="h-full max-h-[60vh] sm:max-h-[65vh] flex items-center justify-center bg-black rounded-lg overflow-hidden">
+                ) : (
+                  <div className="max-h-[60vh] overflow-hidden rounded-lg bg-black">
                     <video
                       controls
-                      className="max-w-full max-h-full"
+                      className="w-full h-full"
                       src={selectedUpload.driveUrl}
-                      poster={selectedUpload.thumbnailUrl || getVideoThumbnailUrl(selectedUpload.driveUrl) || undefined}
                     >
                       Your browser does not support the video tag.
                     </video>
                   </div>
-                ) : (
-                  <div className="h-full max-h-[60vh] sm:max-h-[65vh] flex items-center justify-center bg-muted rounded-lg">
-                    <div className="text-center">
-                      <ExternalLink className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">File preview not available</p>
-                    </div>
-                  </div>
                 )}
-              </div>
-              
-              {/* File Details */}
-              <div className="p-4 sm:p-6 pt-2 border-t bg-muted/30">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                  <div className="flex justify-between sm:block">
+                
+                <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                  <div>
                     <span className="font-medium">File Size:</span>
-                    <span className="text-muted-foreground sm:ml-0 ml-2">
+                    <span className="ml-2 text-muted-foreground">
                       {formatFileSize(selectedUpload.fileSize)}
                     </span>
                   </div>
-                  <div className="flex justify-between sm:block">
+                  <div>
                     <span className="font-medium">Uploaded:</span>
-                    <span className="text-muted-foreground sm:ml-0 ml-2">
+                    <span className="ml-2 text-muted-foreground">
                       {format(new Date(selectedUpload.uploadedAt), 'PPP')}
                     </span>
                   </div>
