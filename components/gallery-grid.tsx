@@ -158,7 +158,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                   upload.thumbnailUrl ? (
                     <img
                       src={upload.thumbnailUrl}
-                      alt="img thumb"
+                      alt="don't worry we still received your file upload"
                       className="w-full h-full object-cover cursor-pointer"
                       onClick={() => setSelectedUpload(upload)}
                     />
@@ -178,7 +178,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                       <div className="relative w-full h-full cursor-pointer" onClick={() => setSelectedUpload(upload)}>
                         <img
                           src={videoThumbnail}
-                          alt="video thumb"
+                          alt="don't worry we still received your file upload"
                           className="w-full h-full object-cover"
                         />
                         {/* Video play overlay */}
@@ -227,17 +227,19 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                   <p className="text-sm font-medium truncate flex-1">
                     {upload.originalName}
                   </p>
-                  <Badge variant={upload.isPublic ? 'default' : 'secondary'}>
+                  <span>{formatFileSize(upload.fileSize)}</span>
+                  {/* <Badge variant={upload.isPublic ? 'default' : 'secondary'}>
                     {upload.isPublic ? (
                       <><Eye className="w-3 h-3 mr-1" />Public</>
                     ) : (
                       <><EyeOff className="w-3 h-3 mr-1" />Private</>
                     )}
-                  </Badge>
+                  </Badge> */}
                 </div>
                 
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{formatFileSize(upload.fileSize)}</span>
+                  
+                  <span>{format(new Date(upload.uploadedAt), 'h:mm a')}</span>
                   <span>{format(new Date(upload.uploadedAt), 'MMM d, yyyy')}</span>
                 </div>
               </div>
