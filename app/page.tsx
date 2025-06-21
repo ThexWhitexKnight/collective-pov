@@ -56,7 +56,7 @@ export default function HomePage() {
             Gift Them Your Memories
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            The Guests of Honor have requested YOU! <br>Help them experience the day again and again, by sharing YOUR perspective.</br> <br>Help them fill this gallery with photos and videos of the day's moments.</br> 
+            The Guests of Honor have requested YOU! Help them experience the day again and again, by sharing YOUR perspective. Help them fill this gallery with photos and videos of the day's moments.
           </p>
         </div>
 
