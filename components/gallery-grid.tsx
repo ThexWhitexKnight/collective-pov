@@ -327,7 +327,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                   <div>
                     <span className="font-medium">Uploaded:</span>
                     <span className="ml-2 text-muted-foreground">
-                      {format(new Date(selectedUpload.uploadedAt), 'PPP')}
+                      {format(new Date(upload.uploadedAt), 'h:mm a')}
                     </span>
                   </div>
                 </div>
