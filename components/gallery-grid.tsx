@@ -268,7 +268,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
               
               <div className="p-6 pt-4">
                {isImage(selectedUpload.mimeType) ? (
-  <div className="max-h-[60vh] overflow-hidden rounded-lg">
+  <div className="popover-image-container max-h-[60vh] overflow-hidden rounded-lg">
     <img
       src={selectedUpload.thumbnailUrl ? getHighQualityThumbnailUrl(selectedUpload.thumbnailUrl) : getDirectDriveUrl(selectedUpload.driveUrl, selectedUpload.mimeType)}
       alt="Only Thumbnail Available for Public Display"
