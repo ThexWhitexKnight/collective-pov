@@ -39,7 +39,7 @@ export default function HomePage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold">The Collective POV Experience</h1>
-                <p className="text-sm text-muted-foreground hidden sm:block">
+                <p align="center" className="text-sm text-muted-foreground hidden sm:block">
                   by 2IP Events & White Knights Media
                 </p>
               </div>
@@ -53,10 +53,10 @@ export default function HomePage() {
         {/* Hero Section */}
         <div className="text-center mb-8">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Gift Them Memories To Help Preserve The Moment
+            Gift Them Your Memories
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Help celebrate and support The Main Attraction by filling up their gallery with photos and videos from Your Unique Perspective. Help them relive the moments of the day for years to come. 
+            The Main Attraction has requested your help! They want to re-experience the occasion again and again, but from your perspective. Help them fill this gallery with photos and videos of the day's moments. 
           </p>
         </div>
 
