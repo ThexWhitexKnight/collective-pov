@@ -1,12 +1,9 @@
-
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Camera, Upload, X, Image, Video, Check } from 'lucide-react';
+import { Upload, X, Image, Video, Check, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { validateFile, validateVideoFile } from '@/lib/file-validation';
 import { toast } from 'sonner';
@@ -25,10 +22,8 @@ interface UploadZoneProps {
 
 export default function UploadZone({ onUploadComplete }: UploadZoneProps) {
   const [files, setFiles] = useState<FilePreview[]>([]);
-  const [isPublic, setIsPublic] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [dragActive, setDragActive] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -58,41 +53,17 @@ export default function UploadZone({ onUploadComplete }: UploadZoneProps) {
 
       const preview = URL.createObjectURL(file);
       
-      // Prepare thumbnail variables (empty for now)
-let thumbnail: string | undefined;
-let thumbnailBlob: Blob | undefined;
-
-newFiles.push({
-  file,
-  preview,
-  isValid: finalValidation.isValid,
-  error: finalValidation.error,
-  type: finalValidation.fileType as 'image' | 'video'
-});
+      newFiles.push({
+        file,
+        preview,
+        isValid: finalValidation.isValid,
+        error: finalValidation.error,
+        type: finalValidation.fileType as 'image' | 'video'
+      });
     }
     
     setFiles(prev => [...prev, ...newFiles]);
   }, []);
-
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      processFiles(e.dataTransfer.files);
-    }
-  }, [processFiles]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -125,7 +96,7 @@ newFiles.push({
         const filePreview = validFiles[i];
         const formData = new FormData();
         formData.append('file', filePreview.file);
-        formData.append('isPublic', isPublic.toString());
+        formData.append('isPublic', 'true'); // Always public now
 
         const response = await fetch('/api/upload', {
           method: 'POST',
@@ -153,140 +124,96 @@ newFiles.push({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Upload Controls */}
-      <div className="flex flex-col sm:flex-row gap-4">
+    <div className="w-full max-w-2xl mx-auto p-4 space-y-6">
+      {/* Simple File Selection Buttons */}
+      <div className="space-y-4">
         <Button
           onClick={() => fileInputRef.current?.click()}
-          className="flex-1 h-12 text-base"
+          className="w-full h-16 text-lg bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg"
           disabled={uploading}
         >
-          <Upload className="w-5 h-5 mr-2" />
-          Choose Files
+          <Upload className="w-6 h-6 mr-3" />
+          Select Files
         </Button>
         
         <Button
           onClick={() => cameraInputRef.current?.click()}
           variant="outline"
-          className="flex-1 h-12 text-base"
+          className="w-full h-16 text-lg border-2 border-primary text-primary hover:bg-primary hover:text-white rounded-xl"
           disabled={uploading}
         >
-          <Camera className="w-5 h-5 mr-2" />
-          Camera
+          <Camera className="w-6 h-6 mr-3" />
+          Take Photo
         </Button>
       </div>
 
-      {/* Privacy Toggle */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <Label htmlFor="public-toggle" className="text-base font-medium">
-              Make uploads public
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Public uploads can be viewed by anyone with the gallery link
-            </p>
-          </div>
-          <Switch
-            id="public-toggle"
-            checked={isPublic}
-            onCheckedChange={setIsPublic}
-            disabled={uploading}
-          />
-        </div>
-      </Card>
-
-      {/* Drag & Drop Zone */}
-      <Card
-        className={`border-2 border-dashed transition-colors ${
-          dragActive
-            ? 'border-primary bg-primary/5'
-            : 'border-muted-foreground/25'
-        }`}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
-        <div className="p-8 text-center">
-          <Upload className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-lg font-medium mb-2">
-            Drag & drop files here
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Supports JPG, PNG, HEIC, MP4, MOV, AVI
-          </p>
-        </div>
-      </Card>
-
       {/* File Previews */}
       {files.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Selected Files</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Card className="p-4 bg-background border border-border">
+          <h3 className="text-lg font-semibold mb-4 text-foreground">Selected Files</h3>
+          <div className="space-y-3">
             {files.map((filePreview, index) => (
-              <Card key={index} className="p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
-                    {filePreview.type === 'image' ? (
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted">
-                        <img
-                          src={filePreview.preview}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
-                        <Video className="w-8 h-8 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {filePreview.file.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {(filePreview.file.size / 1024 / 1024).toFixed(1)} MB
-                    </p>
-                    
-                    {filePreview.isValid ? (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Check className="w-4 h-4 text-green-500" />
-                        <span className="text-xs text-green-600">Valid</span>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-red-600 mt-1">
-                        {filePreview.error}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeFile(index)}
-                    disabled={uploading}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
+              <div key={index} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex-shrink-0">
+                  {filePreview.type === 'image' ? (
+                    <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={filePreview.preview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center">
+                      <Video className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
                 </div>
-              </Card>
+                
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate text-foreground">
+                    {filePreview.file.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {(filePreview.file.size / 1024 / 1024).toFixed(1)} MB
+                  </p>
+                  
+                  {filePreview.isValid ? (
+                    <div className="flex items-center gap-1 mt-1">
+                      <Check className="w-3 h-3 text-green-500" />
+                      <span className="text-xs text-green-600">Ready</span>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-destructive mt-1">
+                      {filePreview.error}
+                    </p>
+                  )}
+                </div>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeFile(index)}
+                  disabled={uploading}
+                  className="h-8 w-8 p-0 hover:bg-destructive/10"
+                >
+                  <X className="w-4 h-4 text-muted-foreground hover:text-destructive" />
+                </Button>
+              </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Upload Progress */}
       {uploading && (
-        <Card className="p-4">
-          <div className="space-y-2">
+        <Card className="p-4 bg-background border border-border">
+          <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span>Uploading files...</span>
-              <span>{Math.round(uploadProgress)}%</span>
+              <span className="text-foreground">Uploading files...</span>
+              <span className="text-primary font-medium">{Math.round(uploadProgress)}%</span>
             </div>
-            <Progress value={uploadProgress} />
+            <Progress value={uploadProgress} className="h-2" />
           </div>
         </Card>
       )}
@@ -296,10 +223,23 @@ newFiles.push({
         <Button
           onClick={uploadFiles}
           disabled={uploading || files.filter(f => f.isValid).length === 0}
-          className="w-full h-12 text-base"
+          className="w-full h-14 text-lg bg-primary hover:bg-primary/90 text-white rounded-xl shadow-lg"
         >
           {uploading ? 'Uploading...' : `Upload ${files.filter(f => f.isValid).length} File(s)`}
         </Button>
+      )}
+
+      {/* Success/Error Messages */}
+      {!uploading && files.length === 0 && (
+        <div className="text-center py-8">
+          <Upload className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">
+            Select files to get started
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Supports JPG, PNG, HEIC, MP4, MOV, AVI
+          </p>
+        </div>
       )}
 
       {/* Hidden File Inputs */}
