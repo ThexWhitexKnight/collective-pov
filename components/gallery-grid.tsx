@@ -27,11 +27,6 @@ interface GalleryGridProps {
 }
 
 export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
-  const [uploads, setUploads] = useState<Upload[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
-  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
-
   const getDirectDriveUrl = (driveUrl: string, mimeType: string) => {
     console.log('Original driveUrl:', driveUrl);
     
@@ -55,6 +50,20 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
     
     return driveUrl;
   };
+
+  // Fixed: Restore video thumbnail generation function
+  const getVideoThumbnailUrl = (driveUrl: string) => {
+  const fileIdMatch = driveUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (!fileIdMatch) return null;
+  
+  const fileId = fileIdMatch[1];
+  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h400`;
+};
+
+  const [uploads, setUploads] = useState<Upload[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
+  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
 
   const fetchUploads = async () => {
     try {
@@ -89,7 +98,8 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      // Fixed: Restore smaller grid size for loading state
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2">
         {[...Array(6)].map((_, i) => (
           <Card key={i} className="aspect-square animate-pulse bg-muted" />
         ))}
@@ -133,7 +143,8 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        // Fixed: Restore smaller grid size (lg:grid-cols-4 xl:grid-cols-5 gap-2)
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-2">
           {uploads.map((upload) => (
             <Card key={upload.id} className="group overflow-hidden">
               <div className="aspect-square relative bg-muted">
@@ -154,31 +165,35 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                     </div>
                   )
                 ) : isVideo(upload.mimeType) ? (
-                  upload.thumbnailUrl ? (
-                    <div className="relative w-full h-full cursor-pointer" onClick={() => setSelectedUpload(upload)}>
-                      <img
-                        src={upload.thumbnailUrl}
-                        alt="video thumb"
-                        className="w-full h-full object-cover"
-                      />
-                      {/* Video play overlay */}
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div className="bg-white/90 rounded-full p-2">
-                          <Video className="w-6 h-6 text-gray-800" />
+                  // Fixed: Use getVideoThumbnailUrl for video thumbnails
+                  (() => {
+                    const videoThumbnail = getVideoThumbnailUrl(upload.driveUrl);
+                    return videoThumbnail ? (
+                      <div className="relative w-full h-full cursor-pointer" onClick={() => setSelectedUpload(upload)}>
+                        <img
+                          src={videoThumbnail}
+                          alt="video thumb"
+                          className="w-full h-full object-cover"
+                        />
+                        {/* Video play overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <div className="bg-white/90 rounded-full p-2">
+                            <Video className="w-6 h-6 text-gray-800" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ) : (
-                    <div 
-                      className="w-full h-full flex items-center justify-center cursor-pointer bg-gray-100"
-                      onClick={() => setSelectedUpload(upload)}
-                    >
-                      <div className="text-center">
-                        <Video className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
-                        <span className="text-xs text-muted-foreground">Video</span>
+                    ) : (
+                      <div 
+                        className="w-full h-full flex items-center justify-center cursor-pointer bg-gray-100"
+                        onClick={() => setSelectedUpload(upload)}
+                      >
+                        <div className="text-center">
+                          <Video className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
+                          <span className="text-xs text-muted-foreground">Video</span>
+                        </div>
                       </div>
-                    </div>
-                  )
+                    );
+                  })()
                 ) : (
                   <div 
                     className="w-full h-full flex items-center justify-center cursor-pointer"
@@ -204,7 +219,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
               <div className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium truncate flex-1">
-                    {upload.originalName || upload.filename}
+                    {upload.originalName}
                   </p>
                   <Badge variant={upload.isPublic ? 'default' : 'secondary'}>
                     {upload.isPublic ? (
@@ -232,7 +247,7 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
             <>
               <DialogHeader className="p-6 pb-0">
                 <DialogTitle className="flex items-center justify-between">
-                  <span className="truncate">{selectedUpload.originalName || selectedUpload.filename}</span>
+                  <span className="truncate">{selectedUpload.originalName}</span>
                   <div className="flex items-center gap-2 ml-4">
                     <Badge variant={selectedUpload.isPublic ? 'default' : 'secondary'}>
                       {selectedUpload.isPublic ? (
@@ -254,15 +269,43 @@ export default function GalleryGrid({ refreshTrigger }: GalleryGridProps) {
                       className="w-full h-full object-contain"
                     />
                   </div>
-                ) : (
+                ) : isVideo(selectedUpload.mimeType) ? (
+                  // Fixed: Show video thumbnail in pop-over too
                   <div className="max-h-[60vh] overflow-hidden rounded-lg bg-black">
-                    <video
-                      controls
-                      className="w-full h-full"
-                      src={selectedUpload.driveUrl}
-                    >
-                      Your browser does not support the video tag.
-                    </video>
+                    {(() => {
+                      const videoThumbnail = getVideoThumbnailUrl(selectedUpload.driveUrl);
+                      return videoThumbnail ? (
+                        <div className="relative w-full h-full">
+                          <img
+                            src={videoThumbnail}
+                            alt="Video thumbnail - Click to play"
+                            className="w-full h-full object-contain"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                            <div className="bg-white/90 rounded-full p-4">
+                              <Video className="w-8 h-8 text-gray-800" />
+                            </div>
+                          </div>
+                          <p className="absolute bottom-4 left-4 text-white text-sm bg-black/50 px-2 py-1 rounded">
+                            Video preview - Full playback not available
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div className="text-center text-white">
+                            <Video className="w-16 h-16 mx-auto mb-4" />
+                            <p>Video preview not available</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <div className="max-h-[60vh] overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                    <div className="text-center">
+                      <ExternalLink className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">File preview not available</p>
+                    </div>
                   </div>
                 )}
                 
